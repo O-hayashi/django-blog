@@ -43,7 +43,7 @@ for blog in featured_blogs:
         category=category,
         author=user,
         featured_image="uploads/default.jpg",
-        short_discription=blog["desc"],
+        short_description=blog["desc"],
         blog_body=blog["body"],
         status="Published",
         is_featured=True
@@ -94,7 +94,7 @@ for blog in normal_blogs:
         category=category,
         author=user,
         featured_image="uploads/default.jpg",
-        short_discription=blog["desc"],
+        short_description=blog["desc"],
         blog_body=blog["body"],
         status="Published",
         is_featured=False

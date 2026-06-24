@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Secondary Grid Featured blogs -->
+    <h3 class="text-warning my-4" style="letter-spacing: 2px;">Search Term - {{keyword}}</h3>
+    <div class="row mb-2">
+      {% if blogs %}
+      {% for blog in blogs %}
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body">
+            <h3><a class="text-dark" href="{% url 'blogs' blog.slug %}">{{blog.title}}</a></h3>
+            <small class="mb-1 d-block text-muted">{{blog.created_at|timesince}} ago | {{blog.author}}</small>
+            <p class="card-text mt-2">{{blog.short_description | truncatewords:30}}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p>No blogs found</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

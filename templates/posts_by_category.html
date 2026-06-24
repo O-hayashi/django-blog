@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <!-- Secondary Grid Featured Posts -->
+    <!-- Secondary Grid Featured blogs -->
     <h3 class="text-uppercase text-warning my-4" style="letter-spacing: 2px;">Category - {{category}}</h3>
     <div class="row mb-2">
       {% if posts %}
@@ -9,15 +9,15 @@
       <div class="col-md-6">
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body">
-            <h3>{{post.title}}</h3>
+            <h3><a class="text-dark" href="{% url 'blogs' post.slug %}">{{post.title}}</a></h3>
             <small class="mb-1 d-block text-muted">{{post.created_at|timesince}} ago | {{post.author}}</small>
-            <p class="card-text mt-2">{{post.short_discription | truncatewords:30}}</p>
+            <p class="card-text mt-2">{{post.short_description | truncatewords:30}}</p>
           </div>
         </div>
       </div>
       {% endfor %}
       {% else %}
-      <p>No posts found</p>
+      <p>No blogs found</p>
       {% endif %}
     </div>
   </div>
