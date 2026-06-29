@@ -1,135 +1,231 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from blogs.models import Category, Blog
-from django.contrib.auth.decorators import login_required
-from . forms import CategoryForm, BlogForm, AddUserForm, EditUserForm
-from django.template.defaultfilters import slugify
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 
-@login_required(login_url = 'login')
+from blogs.models import Category, Blog
+from .forms import CategoryForm, BlogForm, AddUserForm, EditUserForm
+
+
+# ==========================
+# Dashboard
+# ==========================
+
+@login_required(login_url='login')
+@permission_required('blogs.view_blog', raise_exception=True)
 def dashboard(request):
-  category_count = Category.objects.all().count()
-  blogs_count = Blog.objects.filter(status = "Published").count()
-  context = {
-    'category_count': category_count,
-    'blogs_count': blogs_count,
-  }
-  return render(request, 'dashboard/dashboard.html', context)
+    category_count = Category.objects.count()
+    blogs_count = Blog.objects.filter(status="Published").count()
 
-def categories(request):
-  return render(request, 'dashboard/categories.html')
-
-def add_category(request):
-  if request.method == "POST":
-    form = CategoryForm(request.POST)
-    if form.is_valid():
-      form.save()
-      return redirect('categories')
-  else:
-    form = CategoryForm()
     context = {
-      'form': form,
+        'category_count': category_count,
+        'blogs_count': blogs_count,
     }
-    return render(request, 'dashboard/add_category.html', context)
-  
-def edit_category(request, pk):
-    category = get_object_or_404(Category, pk=pk)
 
-    if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
+    return render(request, 'dashboard/dashboard.html', context)
+
+
+# ==========================
+# Categories
+# ==========================
+
+@login_required(login_url='login')
+@permission_required('blogs.view_category', raise_exception=True)
+def categories(request):
+    return render(request, 'dashboard/categories.html')
+
+
+@login_required(login_url='login')
+@permission_required('blogs.add_category', raise_exception=True)
+def add_category(request):
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST)
+
         if form.is_valid():
             form.save()
             return redirect('categories')
+
+    else:
+        form = CategoryForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'dashboard/add_category.html', context)
+
+
+@login_required(login_url='login')
+@permission_required('blogs.change_category', raise_exception=True)
+def edit_category(request, pk):
+
+    category = get_object_or_404(Category, pk=pk)
+
+    if request.method == 'POST':
+
+        form = CategoryForm(request.POST, instance=category)
+
+        if form.is_valid():
+            form.save()
+            return redirect('categories')
+
     else:
         form = CategoryForm(instance=category)
 
     context = {
         'form': form,
-        'category':category,
+        'category': category,
     }
+
     return render(request, 'dashboard/edit_category.html', context)
+
+
+@login_required(login_url='login')
+@permission_required('blogs.delete_category', raise_exception=True)
 def delete_category(request, pk):
-  get_category = get_object_or_404(Category, pk=pk)
-  get_category.delete()
-  return redirect('categories')
 
-# post-categories
+    category = get_object_or_404(Category, pk=pk)
+    category.delete()
 
+    return redirect('categories')
+
+
+# ==========================
+# Posts
+# ==========================
+
+@login_required(login_url='login')
+@permission_required('blogs.view_blog', raise_exception=True)
 def posts(request):
-  posts = Blog.objects.all()
-  context = {
-    'posts': posts,
-  }
-  return render(request, 'dashboard/posts.html', context)
 
-def add_post(request):
-  if request.method == 'POST':
-   form = BlogForm(request.POST, request.FILES)
-   if form.is_valid():
-      post = form.save(commit=False)
-      post.author = request.user
-      post.save()
-      title = form.cleaned_data['title']
-      post.slug = slugify(title) + '-' + str(post.id)
-      post.save()                           
-      return redirect('posts')
-  else:
-    form = BlogForm()
+    posts = Blog.objects.all()
+
     context = {
-      'form': form,
+        'posts': posts,
     }
-    return render(request, 'dashboard/add_post.html', context)
-  
-def delete_post(request, pk):
-  post = get_object_or_404(Blog, pk=pk)
-  post.delete()
-  return redirect('posts')
 
-def edit_post(request, pk):
-  post = get_object_or_404(Blog, pk = pk)
-  if request.method == 'POST':
-    form = BlogForm(request.POST, request.FILES, instance=post)
-    if form.is_valid():
-      post = form.save()
-      title = form.cleaned_data['title']
-      post.slug = slugify(title) + "-" + str(post.id)
-      post.save()
-      return redirect('posts')
+    return render(request, 'dashboard/posts.html', context)
 
-  else:
-    form = BlogForm(instance=post)
+
+@login_required(login_url='login')
+@permission_required('blogs.add_blog', raise_exception=True)
+def add_post(request):
+
+    if request.method == 'POST':
+
+        form = BlogForm(request.POST, request.FILES)
+
+        if form.is_valid():
+
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+
+            title = form.cleaned_data['title']
+            post.slug = slugify(title) + '-' + str(post.id)
+            post.save()
+
+            return redirect('posts')
+
+    else:
+        form = BlogForm()
+
     context = {
-      'post': post,
-      'form':form,
+        'form': form,
+    }
+
+    return render(request, 'dashboard/add_post.html', context)
+
+
+@login_required(login_url='login')
+@permission_required('blogs.change_blog', raise_exception=True)
+def edit_post(request, pk):
+
+    post = get_object_or_404(Blog, pk=pk)
+
+    if request.method == 'POST':
+
+        form = BlogForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+
+            post = form.save()
+
+            title = form.cleaned_data['title']
+            post.slug = slugify(title) + "-" + str(post.id)
+            post.save()
+
+            return redirect('posts')
+
+    else:
+        form = BlogForm(instance=post)
+
+    context = {
+        'post': post,
+        'form': form,
     }
 
     return render(request, 'dashboard/edit_post.html', context)
 
-def users(request):
-  users = User.objects.all()
-  context = {
-    'users': users,
-  }
-  return render(request, 'dashboard/user.html', context)
 
-def add_user(request):
-  if request.method == 'POST':
-    form = AddUserForm(request.POST)
-    if form.is_valid():
-      form.save()
-      return redirect('users')
-    else:
-      print(form.errors)
-  else:
-    form = AddUserForm()
+@login_required(login_url='login')
+@permission_required('blogs.delete_blog', raise_exception=True)
+def delete_post(request, pk):
+
+    post = get_object_or_404(Blog, pk=pk)
+    post.delete()
+
+    return redirect('posts')
+
+
+# ==========================
+# Users
+# ==========================
+
+@login_required(login_url='login')
+@permission_required('auth.view_user', raise_exception=True)
+def users(request):
+
+    users = User.objects.all()
+
     context = {
-      'form': form,
+        'users': users,
     }
+
+    return render(request, 'dashboard/user.html', context)
+
+
+@login_required(login_url='login')
+@permission_required('auth.add_user', raise_exception=True)
+def add_user(request):
+
+    if request.method == 'POST':
+
+        form = AddUserForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect('users')
+
+    else:
+        form = AddUserForm()
+
+    context = {
+        'form': form,
+    }
+
     return render(request, 'dashboard/add_user.html', context)
-  
+
+
+@login_required(login_url='login')
+@permission_required('auth.change_user', raise_exception=True)
 def edit_user(request, pk):
+
     user = get_object_or_404(User, pk=pk)
 
     if request.method == 'POST':
+
         form = EditUserForm(request.POST, instance=user)
 
         if form.is_valid():
@@ -146,7 +242,12 @@ def edit_user(request, pk):
 
     return render(request, 'dashboard/edit_user.html', context)
 
+
+@login_required(login_url='login')
+@permission_required('auth.delete_user', raise_exception=True)
 def delete_user(request, pk):
-  user = get_object_or_404(User, pk = pk)
-  user.delete()
-  return redirect('users')
+
+    user = get_object_or_404(User, pk=pk)
+    user.delete()
+
+    return redirect('users')
