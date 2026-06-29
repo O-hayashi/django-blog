@@ -4,6 +4,8 @@ from blog_extra.models import About
 from .forms import RegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import auth
+from django.views.decorators.http import require_POST
+
 
 def home(request):
   featured_posts = Blog.objects.filter(is_featured = True, status = "Published").order_by('updated_at')
@@ -54,6 +56,7 @@ def login(request):
   }
   return render(request, 'login.html', context)
 
+@require_POST
 def logout(request):
   auth.logout(request)
   return redirect('home')
